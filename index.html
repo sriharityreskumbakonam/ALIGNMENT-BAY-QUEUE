@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sri Hari Tyres – Alignment Queue</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#101010;color:#fff}
+.header{padding:22px;text-align:center;background:#181818;border-bottom:2px solid #e31b23}
+.logo{font-size:28px;font-weight:800}.sub{font-size:14px;letter-spacing:2px;color:#ccc}
+.container{max-width:1100px;margin:auto;padding:25px}
+.card{background:#1d1d1d;border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 5px 20px #0005}
+h2{margin-top:0}.row{display:flex;gap:12px;flex-wrap:wrap}
+input{flex:1;min-width:220px;padding:15px;border-radius:10px;border:1px solid #555;background:#111;color:#fff;font-size:18px}
+button{padding:14px 20px;border:0;border-radius:10px;font-weight:700;cursor:pointer;font-size:16px}
+.add{background:#e31b23;color:#fff}.next{background:#fff;color:#111}.danger{background:#555;color:#fff}
+.queue-item{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:15px;border-bottom:1px solid #333}
+.vehicle{font-size:20px;font-weight:700}.model{color:#aaa}.empty{color:#888}
+.tv{min-height:100vh;background:#0b0b0b;text-align:center}
+.tv .header{padding:30px}.tv .logo{font-size:42px}.tv .container{max-width:1400px}
+.now{font-size:72px;font-weight:900;letter-spacing:2px}.nowcard{padding:35px;background:#171717;border-radius:22px;border:2px solid #e31b23}
+.nextcard{margin-top:25px;padding:25px;background:#171717;border-radius:18px}
+.nextnum{font-size:42px;font-weight:800}.nextmodel{font-size:24px;color:#bbb}
+.wait{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:20px}
+.wait div{background:#181818;padding:18px;border-radius:12px;font-size:24px}
+.small{color:#999;font-size:13px;margin-top:15px}
+a{color:#fff}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const key='sriHariQueue';
+let queue=JSON.parse(localStorage.getItem(key)||'[]');
+
+function save(){localStorage.setItem(key,JSON.stringify(queue));render();}
+function add(){
+ const v=document.getElementById('vehicle').value.trim().toUpperCase();
+ const m=document.getElementById('model').value.trim();
+ if(!v||!m){alert('Enter vehicle number and model');return}
+ queue.push({vehicle:v,model:m});
+ document.getElementById('vehicle').value='';document.getElementById('model').value='';save();
+}
+function callNext(){if(queue.length>1){queue.push(queue.shift());save()}}
+function complete(){if(queue.length){queue.shift();save()}}
+function clearAll(){if(confirm('Clear all vehicles?')){queue=[];save()}}
+function staff(){
+ document.getElementById('app').innerHTML=`
+ <div class="header"><div class="logo">SRI HARI TYRES</div><div class="sub">CEAT • WHEEL ALIGNMENT QUEUE</div></div>
+ <div class="container">
+ <div class="card"><h2>Add Vehicle</h2><div class="row">
+ <input id="vehicle" placeholder="Vehicle Number e.g. TN 49 AB 1234">
+ <input id="model" placeholder="Model e.g. Tata Punch">
+ <button class="add" onclick="add()">ADD TO QUEUE</button></div>
+ <div class="small">For the TV, open this page with <b>?mode=tv</b> on the TV browser.</div></div>
+ <div class="card"><h2>Queue</h2><div id="list"></div>
+ <div class="row" style="margin-top:15px">
+ <button class="next" onclick="callNext()">CALL NEXT</button>
+ <button class="danger" onclick="complete()">COMPLETED</button>
+ <button class="danger" onclick="clearAll()">CLEAR ALL</button>
+ </div></div></div>`;
+ render();
+}
+function render(){
+ const list=document.getElementById('list'); if(!list)return;
+ list.innerHTML=queue.length?queue.map((x,i)=>`<div class="queue-item"><div><div class="vehicle">${i===0?'🟢 NOW • ':''}${x.vehicle}</div><div class="model">${x.model}</div></div><div>${i===0?'ALIGNMENT':''}</div></div>`).join(''):'<div class="empty">No vehicles in queue</div>';
+}
+function tv(){
+ document.body.className='tv';
+ document.getElementById('app').innerHTML=`
+ <div class="header"><div class="logo">SRI HARI TYRES</div><div class="sub">CEAT • WHEEL ALIGNMENT</div></div>
+ <div class="container">
+ <div class="nowcard"><div class="sub">NOW SERVING</div><div id="now"></div></div>
+ <div class="nextcard"><div class="sub">NEXT VEHICLE</div><div id="next"></div></div>
+ <h2 style="margin-top:30px">WAITING QUEUE</h2><div class="wait" id="wait"></div>
+ </div>`;
+ tvRender(); setInterval(tvRender,1000);
+}
+function tvRender(){
+ const now=document.getElementById('now'); if(!now)return;
+ if(!queue.length){now.innerHTML='<div class="now">NO VEHICLE</div>';document.getElementById('next').innerHTML='<div class="nextnum">—</div>';document.getElementById('wait').innerHTML='';return}
+ now.innerHTML=`<div class="now">${queue[0].vehicle}</div><div class="nextmodel">${queue[0].model}</div>`;
+ document.getElementById('next').innerHTML=queue[1]?`<div class="nextnum">${queue[1].vehicle}</div><div class="nextmodel">${queue[1].model}</div>`:'<div class="nextnum">—</div>';
+ document.getElementById('wait').innerHTML=queue.slice(2).map(x=>`<div><b>${x.vehicle}</b><br><span style="font-size:17px;color:#aaa">${x.model}</span></div>`).join('');
+}
+if(new URLSearchParams(location.search).get('mode')==='tv') tv(); else staff();
+</script>
+</body>
+</html>
