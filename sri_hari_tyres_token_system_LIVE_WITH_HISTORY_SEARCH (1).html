@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sri Hari Tyres – Smart Workshop</title>
+<style>
+:root{--bg:#07111f;--card:#101d2e;--card2:#15253a;--line:#29405b;--text:#f4f7fb;--muted:#9db0c7;--accent:#38bdf8;--green:#22c55e;--orange:#f59e0b;--red:#ef4444}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#07111f,#0b1626);color:var(--text)}
+header{padding:18px 22px;background:#081321;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{font-size:24px;font-weight:800}.brand span{color:var(--accent)}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;padding:14px 20px;background:#0b1726;border-bottom:1px solid var(--line)}
+.tab{border:1px solid var(--line);background:var(--card);color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}.tab.active{background:var(--accent);color:#062033;border-color:var(--accent)}
+.page{display:none;padding:20px;max-width:1500px;margin:auto}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.card{background:rgba(16,29,46,.96);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 10px 30px #0002}
+h2,h3{margin-top:0}.form-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:10px}.form-grid.staff{grid-template-columns:repeat(2,minmax(180px,1fr))}
+input,select,button{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);font-size:15px}input,select{background:#091522;color:var(--text)}button{border:0;background:var(--accent);color:#042033;font-weight:800;cursor:pointer}button.green{background:var(--green);color:#05200d}button.orange{background:var(--orange);color:#281800}button.red{background:var(--red);color:white}button.dark{background:#253b54;color:white}.actions{display:flex;gap:8px;flex-wrap:wrap}.actions button{width:auto;padding:9px 12px}
+.queue{display:grid;gap:10px}.job{display:grid;grid-template-columns:100px 1.3fr 1.2fr 1.3fr 1.2fr auto;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--line);padding:12px;border-radius:12px}.token{font-size:22px;font-weight:900;color:var(--accent)}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;font-size:12px;font-weight:800}.waiting{background:#3b2a08;color:#fbbf24}.service{background:#063d26;color:#86efac}.completed{background:#123152;color:#7dd3fc}
+.metric{font-size:34px;font-weight:900;color:var(--accent)}.label{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted)}
+.tv{min-height:75vh}.now{border:2px solid var(--accent);background:linear-gradient(135deg,#0e2940,#102035);text-align:center}.now .big{font-size:clamp(48px,8vw,110px);font-weight:900;color:var(--accent)}.waiting-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.waiting-card{background:#14243a;border:1px solid var(--line);padding:16px;border-radius:14px}.empty{color:var(--muted);padding:15px;text-align:center}
+.small{font-size:12px;color:var(--muted)}.staffrow{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;background:var(--card2);padding:10px;border-radius:10px;margin:7px 0}
+@media(max-width:800px){.form-grid{grid-template-columns:1fr}.job,.staffrow{grid-template-columns:1fr}.page{padding:12px}.tabs{padding:10px}.brand{font-size:20px}}
+@media print{header,.tabs,.no-print{display:none}.page{display:block!important}.page:not(#reports){display:none!important}body{background:white;color:black}.card{box-shadow:none}}
+ 
+/* TV DISPLAY */
+.tv{max-width:none;width:100%;padding:12px;min-height:calc(100vh - 100px)}
+.tv-header{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;margin-bottom:10px;font-size:clamp(18px,2vw,32px)}
+.tv-header span{font-size:.5em;color:var(--muted);margin-left:12px}.tv-count{color:var(--muted);font-size:.55em}.tv-count strong{color:var(--accent);font-size:1.7em}
+.tv-now{padding:14px 20px;margin-bottom:12px;min-height:48vh;display:flex;flex-direction:column;justify-content:center}
+.tv-title{font-size:clamp(20px,2vw,34px);font-weight:900;letter-spacing:2px;color:var(--accent);margin-bottom:8px}
+.tv-now .big{font-size:clamp(34px,4vw,62px)!important;line-height:1;margin:0 0 6px}
+.tv-vehicle{font-size:clamp(52px,8vw,125px);font-weight:950;letter-spacing:2px;line-height:1.05;word-break:break-word}
+.tv-model{font-size:clamp(34px,4.5vw,70px);font-weight:850;line-height:1.15;margin-top:8px}
+.tv-details{display:flex;justify-content:center;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:clamp(17px,1.8vw,30px);color:#d9e8f6}
+.tv-wait{padding:12px}.tv-wait-title{font-size:clamp(20px,2vw,30px);font-weight:900;margin-bottom:10px}
+.tv .waiting-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px}
+.tv .waiting-card{padding:10px 14px;min-height:120px}.tv .waiting-card .token{font-size:clamp(16px,1.5vw,24px);color:var(--muted)}
+.tv .waiting-card .wait-vehicle{font-size:clamp(22px,2.3vw,38px);font-weight:900;margin:4px 0}
+.tv .waiting-card .wait-model{font-size:clamp(18px,1.8vw,28px);font-weight:800;color:var(--accent)}
+.tv .waiting-card p{margin:4px 0;font-size:clamp(13px,1.2vw,18px)}
+@media (min-width:1200px){.tv .waiting-grid{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:700px){.tv-header{font-size:18px}.tv-header span{display:none}.tv-now{min-height:auto}.tv-details{gap:8px}.tv .waiting-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+<header><div class="brand">SRI HARI <span>TYRES</span></div><div class="sub">SMART WORKSHOP & TOKEN MANAGEMENT SYSTEM</div></header>
+<nav class="tabs">
+<button class="tab active" data-page="dashboard">🏠 Dashboard</button>
+<button class="tab" data-page="tokens">➕ Token & Staff Control</button>
+<button class="tab" data-page="staffs">👥 Staffs & Attendance</button>
+<button class="tab" data-page="tv">📺 TV Display</button>
+<button class="tab" data-page="reports">📊 Reports</button>
+</nav>
+
+<section id="dashboard" class="page active"><h2>Today's Dashboard</h2><div id="metrics" class="grid"></div><div class="card"><h3>Today's Service Summary</h3><div id="serviceSummary"></div></div></section>
+
+<section id="tokens" class="page">
+<div class="card"><h2>➕ Add Vehicle & Generate Token</h2>
+<div class="form-grid"><input id="vehicle" placeholder="Vehicle Number"><input id="model" placeholder="Car Model">
+<select id="serviceType"></select><select id="tech"></select></div>
+<div style="margin-top:12px"><button onclick="generateToken()">GENERATE TOKEN</button></div></div>
+<div class="card" style="margin-top:16px"><h2>🔧 Now Servicing</h2><div id="inService" class="queue"></div></div>
+<div class="card" style="margin-top:16px"><h2>⏳ Waiting Vehicles</h2><div id="waiting" class="queue"></div></div>
+</section>
+
+<section id="staffs" class="page">
+<div class="card"><h2>👥 Add / Manage Staff</h2><div class="form-grid staff"><input id="staffName" placeholder="Staff Name"><select id="staffRole"><option>Car Technician</option><option>Two-Wheeler Technician</option><option>Manager</option></select></div><div style="margin-top:12px"><button onclick="addStaff()">ADD STAFF</button></div></div>
+<div class="card" style="margin-top:16px"><h2>⏰ Today's Attendance</h2><div id="staffList"></div></div>
+</section>
+
+<section id="tv" class="page tv">
+<div class="tv-header"><div><b>SRI HARI TYRES</b><span>LIVE SERVICE QUEUE</span></div><div class="tv-count">WAITING: <strong id="waitingCount">0</strong></div></div>
+<div class="card now tv-now"><div class="tv-title">NOW SERVICING</div><div id="tvNow"></div></div>
+<div class="card tv-wait"><div class="tv-wait-title">⏳ WAITING VEHICLES</div><div id="tvWaiting" class="waiting-grid"></div></div>
+</section>
+
+<section id="reports" class="page">
+<div class="grid" id="reportMetrics"></div>
+<div class="card" style="margin-top:16px"><h2>👨‍🔧 Technician Work Done Today</h2><div id="todayTech"></div></div>
+<div class="card" style="margin-top:16px"><h2>📅 Technician Work Done This Month</h2><div id="monthTech"></div></div>
+<div class="card" style="margin-top:16px">
+<h2>🔍 Search & Filter History</h2>
+<div class="form-grid">
+<input id="historySearch" placeholder="Search Vehicle Number or Car Model" oninput="renderReports()">
+<input id="fromDate" type="date" onchange="renderReports()">
+<input id="toDate" type="date" onchange="renderReports()">
+<select id="historyTech" onchange="renderReports()"><option value="">All Technicians</option></select>
+<select id="historyService" onchange="renderReports()"><option value="">All Service Types</option></select>
+</div>
+<div class="actions" style="margin-top:12px"><button class="dark" onclick="clearHistoryFilters()">CLEAR FILTERS</button></div>
+<div id="historyResultCount" class="small" style="margin-top:12px"></div>
+</div>
+<div class="card" style="margin-top:16px"><h2>📋 Completed Service History</h2><div style="overflow:auto"><table><thead><tr><th>Date</th><th>Token</th><th>Vehicle</th><th>Model</th><th>Service</th><th>Technician</th><th>Completed</th></tr></thead><tbody id="history"></tbody></table></div></div>
+</section>
+
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, get, runTransaction } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCu2SYYbzbOVgTeb2s3xAL2VRVHRnT5kfY",
+  authDomain: "queue-6207c.firebaseapp.com",
+  databaseURL: "https://queue-6207c-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "queue-6207c",
+  storageBucket: "queue-6207c.firebasestorage.app",
+  messagingSenderId: "792502827865",
+  appId: "1:792502827865:web:52bdc851c3900b1e866a48"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const ROOT = "sriHariTyresTokenV1";
+const STATE_REF = ref(db, ROOT + "/state");
+
+window.__firebaseReady = true;
+window.__db = db;
+window.__stateRef = STATE_REF;
+window.__fbSet = set;
+window.__fbOnValue = onValue;
+window.__fbRunTransaction = runTransaction;
+
+onValue(STATE_REF, (snap) => {
+  const data = snap.val();
+  if (data && data.jobs && data.staff && data.attendance) {
+    window.__remoteState = data;
+    if (window.applyRemoteState) window.applyRemoteState(data);
+  } else if (window.initializeFirebaseState) {
+    window.initializeFirebaseState();
+  }
+});
+</script>
+
+<script>
+const SERVICES=['TYRE 1','TYRE 2','TYRE 3','TYRE 4','ALIGNMENT','ALIGNMENT + 2 WHEEL BALANCING','ALIGNMENT + 4 WHEEL BALANCING'];
+const DEFAULT_STAFF=[['Aravind','Car Technician'],['Arjun','Car Technician'],['Arivazhagan','Car Technician'],['Sarath','Car Technician'],['Vijay','Car Technician']];
+const KEY='sriHariTyresV1';
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||{jobs:[],staff:DEFAULT_STAFF.map(([name,role])=>({id:crypto.randomUUID(),name,role,active:true})),attendance:[]};
+
+function initializeFirebaseState(){
+  if(!window.__firebaseReady) return;
+  window.__fbSet(window.__stateRef, state);
+}
+function applyRemoteState(remote){
+  state = remote;
+  localStorage.setItem(KEY,JSON.stringify(state));
+  render();
+}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
+  render();
+  if(window.__firebaseReady) window.__fbSet(window.__stateRef, state);
+}
+function today(){return new Date().toLocaleDateString('en-CA')}
+function month(){return today().slice(0,7)}
+function esc(x){return String(x||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function time(){return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}
+function fillSelects(){
+ document.getElementById('serviceType').innerHTML=SERVICES.map(x=>`<option>${x}</option>`).join('');
+ const techs=state.staff.filter(s=>s.active&&s.role==='Car Technician');
+ document.getElementById('tech').innerHTML=techs.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function generateToken(){
+ const vehicle=document.getElementById('vehicle').value.trim().toUpperCase(),model=document.getElementById('model').value.trim(),service=document.getElementById('serviceType').value,technicianId=document.getElementById('tech').value;
+ if(!vehicle||!model||!technicianId)return alert('Please enter Vehicle Number, Car Model and Technician.');
+ const daily=state.jobs.filter(j=>j.date===today()); const token=daily.length?Math.max(...daily.map(j=>j.token))+1:1;
+ state.jobs.push({id:crypto.randomUUID(),date:today(),token,vehicle,model,service,technicianId,status:'waiting',createdAt:Date.now(),startedAt:null,completedAt:null});
+ document.getElementById('vehicle').value='';document.getElementById('model').value='';save();alert('Token #'+token+' generated successfully.');
+}
+function techName(id){return state.staff.find(s=>s.id===id)?.name||'Unassigned'}
+function updateJob(id,patch){Object.assign(state.jobs.find(j=>j.id===id),patch);save()}
+function removeJob(id){if(confirm('Remove this token?')){state.jobs=state.jobs.filter(j=>j.id!==id);save()}}
+function jobCard(j){
+ const techOptions=state.staff.filter(s=>s.active&&s.role==='Car Technician').map(s=>`<option value="${s.id}" ${s.id===j.technicianId?'selected':''}>${esc(s.name)}</option>`).join('');
+ const serviceOptions=SERVICES.map(x=>`<option ${x===j.service?'selected':''}>${x}</option>`).join('');
+ const buttons=j.status==='waiting'?`<button class="green" onclick="updateJob('${j.id}',{status:'service',startedAt:Date.now()})">▶ START</button>`:`<button class="green" onclick="updateJob('${j.id}',{status:'completed',completedAt:Date.now()})">✓ COMPLETE</button>`;
+ return `<div class="job"><div><div class="token">#${j.token}</div><span class="badge ${j.status==='waiting'?'waiting':'service'}">${j.status==='waiting'?'WAITING':'IN SERVICE'}</span></div>
+ <div><b>🚗 ${esc(j.vehicle)}</b><div class="small">Vehicle Number</div></div><div><b>🚙 ${esc(j.model)}</b><div class="small">Car Model</div></div>
+ <select onchange="updateJob('${j.id}',{service:this.value})">${serviceOptions}</select><select onchange="updateJob('${j.id}',{technicianId:this.value})">${techOptions}</select>
+ <div class="actions">${buttons}<button class="red" onclick="removeJob('${j.id}')">REMOVE</button></div></div>`
+}
+function renderJobs(){
+ const active=state.jobs.filter(j=>j.date===today()&&j.status!=='completed').sort((a,b)=>a.token-b.token);
+ const servicing=active.filter(j=>j.status==='service'),waiting=active.filter(j=>j.status==='waiting');
+ document.getElementById('inService').innerHTML=servicing.length?servicing.map(jobCard).join(''):'<div class="empty">No vehicle currently in service.</div>';
+ document.getElementById('waiting').innerHTML=waiting.length?waiting.map(jobCard).join(''):'<div class="empty">No vehicles waiting.</div>';
+}
+function attendanceFor(staffId){return state.attendance.find(a=>a.staffId===staffId&&a.date===today())}
+function checkIn(id){if(!attendanceFor(id)){state.attendance.push({id:crypto.randomUUID(),staffId:id,date:today(),inAt:Date.now(),outAt:null});save()}}
+function checkOut(id){let a=attendanceFor(id);if(a&&!a.outAt){a.outAt=Date.now();save()}}
+function fmt(ts){return ts?new Date(ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}):'—'}
+function addStaff(){const n=document.getElementById('staffName').value.trim(),r=document.getElementById('staffRole').value;if(!n)return alert('Enter staff name');state.staff.push({id:crypto.randomUUID(),name:n,role:r,active:true});document.getElementById('staffName').value='';save()}
+function renderStaff(){
+ document.getElementById('staffList').innerHTML=state.staff.filter(s=>s.active).map(s=>{let a=attendanceFor(s.id);return `<div class="staffrow"><b>${esc(s.name)}</b><span>${esc(s.role)}</span><span>IN: ${fmt(a?.inAt)}</span><span>OUT: ${fmt(a?.outAt)}</span><span>${!a?'Not Checked In':a.outAt?'Checked Out':'Working'}</span><div class="actions">${!a?`<button class="green" onclick="checkIn('${s.id}')">CHECK IN</button>`:!a.outAt?`<button class="orange" onclick="checkOut('${s.id}')">CHECK OUT</button>`:''}<button class="dark" onclick="editStaff('${s.id}')">EDIT</button></div></div>`}).join('')||'<div class="empty">No staff added.</div>';
+}
+function editStaff(id){let s=state.staff.find(x=>x.id===id),n=prompt('Staff name',s.name);if(n){s.name=n.trim();save()}}
+function renderTV(){
+ const active=state.jobs.filter(j=>j.date===today()&&j.status!=='completed'),now=active.filter(j=>j.status==='service').sort((a,b)=>a.startedAt-b.startedAt)[0],waiting=active.filter(j=>j.status==='waiting').sort((a,b)=>a.token-b.token);
+ document.getElementById('waitingCount').textContent=waiting.length;
+ document.getElementById('tvNow').innerHTML=now?`<div class="big">TOKEN #${now.token}</div><div class="tv-vehicle">${esc(now.vehicle)}</div><div class="tv-model">${esc(now.model)}</div><div class="tv-details"><span>🔧 ${esc(now.service)}</span><span>👨‍🔧 ${esc(techName(now.technicianId))}</span></div>`:'<div class="empty">No vehicle currently in service</div>';
+ document.getElementById('tvWaiting').innerHTML=waiting.length?waiting.map(j=>`<div class="waiting-card"><div class="token">TOKEN #${j.token}</div><div class="wait-vehicle">${esc(j.vehicle)}</div><div class="wait-model">${esc(j.model)}</div><p>🔧 ${esc(j.service)}</p><p>👨‍🔧 ${esc(techName(j.technicianId))}</p></div>`).join(''):'<div class="empty">No vehicles waiting</div>';
+}
+function renderDashboard(){
+ const jobs=state.jobs.filter(j=>j.date===today()),counts={total:jobs.length,waiting:jobs.filter(j=>j.status==='waiting').length,service:jobs.filter(j=>j.status==='service').length,completed:jobs.filter(j=>j.status==='completed').length};
+ document.getElementById('metrics').innerHTML=[['TOTAL TOKENS',counts.total],['WAITING',counts.waiting],['IN SERVICE',counts.service],['COMPLETED',counts.completed]].map(([l,v])=>`<div class="card"><div class="metric">${v}</div><div class="label">${l}</div></div>`).join('');
+ document.getElementById('serviceSummary').innerHTML=SERVICES.map(s=>{let n=jobs.filter(j=>j.service===s&&j.status==='completed').length;return `<p><b>${esc(s)}</b>: ${n}</p>`}).join('');
+}
+function techTable(filter){const techs=state.staff.filter(s=>s.role==='Car Technician'&&s.active);return `<table><thead><tr><th>Technician</th><th>Completed Jobs</th>${SERVICES.map(s=>`<th>${s}</th>`).join('')}</tr></thead><tbody>${techs.map(s=>{let js=state.jobs.filter(j=>filter(j)&&j.technicianId===s.id&&j.status==='completed');return `<tr><td><b>${esc(s.name)}</b></td><td>${js.length}</td>${SERVICES.map(x=>`<td>${js.filter(j=>j.service===x).length}</td>`).join('')}</tr>`}).join('')}</tbody></table>`}
+function fillHistoryFilters(){
+ const tech=document.getElementById('historyTech');
+ const selectedTech=tech.value;
+ tech.innerHTML='<option value="">All Technicians</option>'+state.staff.filter(s=>s.active&&s.role==='Car Technician').map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+ if([...tech.options].some(o=>o.value===selectedTech)) tech.value=selectedTech;
+ const service=document.getElementById('historyService');
+ const selectedService=service.value;
+ service.innerHTML='<option value="">All Service Types</option>'+SERVICES.map(x=>`<option value="${esc(x)}">${esc(x)}</option>`).join('');
+ if([...service.options].some(o=>o.value===selectedService)) service.value=selectedService;
+}
+function clearHistoryFilters(){
+ document.getElementById('historySearch').value='';
+ document.getElementById('fromDate').value='';
+ document.getElementById('toDate').value='';
+ document.getElementById('historyTech').value='';
+ document.getElementById('historyService').value='';
+ renderReports();
+}
+function renderReports(){
+ fillHistoryFilters();
+ const done=state.jobs.filter(j=>j.status==='completed'),td=done.filter(j=>j.date===today()),mo=done.filter(j=>j.date.startsWith(month()));
+ document.getElementById('reportMetrics').innerHTML=[['COMPLETED TODAY',td.length],['COMPLETED THIS MONTH',mo.length],['TOTAL RECORDS',done.length]].map(([l,v])=>`<div class="card"><div class="metric">${v}</div><div class="label">${l}</div></div>`).join('');
+ document.getElementById('todayTech').innerHTML=techTable(j=>j.date===today());
+ document.getElementById('monthTech').innerHTML=techTable(j=>j.date.startsWith(month()));
+ const q=(document.getElementById('historySearch')?.value||'').trim().toLowerCase();
+ const from=document.getElementById('fromDate')?.value||'';
+ const to=document.getElementById('toDate')?.value||'';
+ const techId=document.getElementById('historyTech')?.value||'';
+ const service=document.getElementById('historyService')?.value||'';
+ const filtered=done.filter(j=>{
+   const text=(j.vehicle+' '+j.model).toLowerCase();
+   return (!q||text.includes(q)) && (!from||j.date>=from) && (!to||j.date<=to) && (!techId||j.technicianId===techId) && (!service||j.service===service);
+ }).sort((a,b)=>b.completedAt-a.completedAt);
+ document.getElementById('historyResultCount').textContent=filtered.length+' completed record'+(filtered.length===1?'':'s')+' found';
+ document.getElementById('history').innerHTML=filtered.length?filtered.map(j=>`<tr><td>${j.date}</td><td>#${j.token}</td><td>${esc(j.vehicle)}</td><td>${esc(j.model)}</td><td>${esc(j.service)}</td><td>${esc(techName(j.technicianId))}</td><td>${new Date(j.completedAt).toLocaleString()}</td></tr>`).join(''):`<tr><td colspan="7" class="empty">No matching completed records found.</td></tr>`;
+}
+function render(){fillSelects();renderJobs();renderStaff();renderTV();renderDashboard();renderReports()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.page).classList.add('active');});
+window.addEventListener('storage',e=>{if(e.key===KEY&&!window.__firebaseReady){state=JSON.parse(e.newValue);render()}});
+if(window.__remoteState) applyRemoteState(window.__remoteState);
+render();
+</script>
+</body></html>
